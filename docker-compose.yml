@@ -52,8 +52,13 @@ services:
         depends_on:
             script-runner:
                 condition: service_healthy
-#    query_tskv2:
-#        image: cnosdb/cnosdb:latest
-#        container_name: query_tskv2.cnosdb.com
-#        volumes:
-#            - ./conf/query_tskv2:/etc/cnosdb
+        command: ["-M","query_tskv"]
+    query_tskv2:
+        image: cnosdb/cnosdb:latest
+        container_name: query_tskv2.cnosdb.com
+        volumes:
+            - ./conf/query_tskv2:/etc/cnosdb
+        command: ["-M","query_tskv"]
+        depends_on:
+            script-runner:
+                condition: service_healthy

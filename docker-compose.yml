@@ -13,52 +13,52 @@ services:
             - "8904:8904"
             - "8905:8905"
     meta1:
-        image: cnosdb/cnosdb:meta-latest
+        image: cnosdb/cnosdb-enterprise:2.3
         container_name: meta1.cnosdb.com
         volumes:
             - ./conf/meta1:/etc/cnosdb
-    meta2:
-        image: cnosdb/cnosdb:meta-latest
-        container_name: meta2.cnosdb.com
-        volumes:
-            - ./conf/meta2:/etc/cnosdb
-    meta3:
-        image: cnosdb/cnosdb:meta-latest
-        container_name: meta3.cnosdb.com
-        volumes:
-            - ./conf/meta3:/etc/cnosdb
-    script-runner:
-        image: ubuntu:latest
-        container_name: script-runner
-        volumes:
-            - ./scripts/meta_init.sh:/scripts/meta_init.sh
         command:
             - /bin/bash
             - -c
             - |
-                apt update && apt install -y curl jq netcat
-                chmod +x /scripts/meta_init.sh
-                /scripts/meta_init.sh
-        healthcheck:
-            test: ["CMD-SHELL", "nc -z localhost 8080 || exit 1"]
-            interval: 5s
-            timeout: 5s
-            retries: 50
+                cnosdb-meta --config /etc/cnosdb/cnosdb-meta.conf
+    meta2:
+        image: cnosdb/cnosdb-enterprise:2.3
+        container_name: meta2.cnosdb.com
+        volumes:
+            - ./conf/meta2:/etc/cnosdb
+        command:
+            - /bin/bash
+            - -c
+            - |
+                cnosdb-meta --config /etc/cnosdb/cnosdb-meta.conf
+    meta3:
+        image: cnosdb/cnosdb-enterprise:2.3
+        container_name: meta3.cnosdb.com
+        volumes:
+            - ./conf/meta3:/etc/cnosdb
+        command:
+            - /bin/bash
+            - -c
+            - |
+                cnosdb-meta --config /etc/cnosdb/cnosdb-meta.conf
     query_tskv1:
-        image: cnosdb/cnosdb:latest
+        image: cnosdb/cnosdb-enterprise:2.3
         container_name: query_tskv1.cnosdb.com
         volumes:
             - ./conf/query_tskv1:/etc/cnosdb
-        depends_on:
-            script-runner:
-                condition: service_healthy
-        command: ["-M","query_tskv"]
+        command:
+            - /bin/bash
+            - -c
+            - |
+                cnosdb run --config /etc/cnosdb/cnosdb.conf
     query_tskv2:
-        image: cnosdb/cnosdb:latest
+        image: cnosdb/cnosdb-enterprise:2.3
         container_name: query_tskv2.cnosdb.com
         volumes:
             - ./conf/query_tskv2:/etc/cnosdb
-        command: ["-M","query_tskv"]
-        depends_on:
-            script-runner:
-                condition: service_healthy
+        command:
+            - /bin/bash
+            - -c
+            - |
+                cnosdb run --config /etc/cnosdb/cnosdb.conf

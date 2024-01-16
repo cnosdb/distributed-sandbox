@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+set -eo pipefail
+IFS=$'\n\t'
+
+if ! [ -x "$(command -v docker)" ]; then
+  echo 'Error: docker is not installed.' >&2
+  exit 1
+fi
+
+if ! [ -x "$(command -v docker-compose)" ]; then
+  echo 'Error: docker-compose is not installed.' >&2
+  exit 1
+fi
+
+sandbox () {
+      if [ "$2" == "-daily" ]; then
+        source .env-daily
+        echo "Using daily...removing old ones."
+        # If latest images already exist, containers are stopped, destroyed,
+        # and rebuilt using newly pulled images
+        if [ $(docker images | grep '.*-[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}' | tr -s ' ' | cut -d ' ' -f 3 | wc -l) -gt 0 ]; then
+          docker-compose down
+          docker-compose rm -f
+          docker-compose build --pull
+        fi
+      else
+        source .env-latest
+        echo "Using latest, stable releases"
+      fi
+  # Enter attaches users to a shell in the desired container
+  enter () {
+    docker ps --filter 'ancestor=cnosdb/cnosdb' --filter 'ancestor=cnosdb/cnosdb-meta' --filter 'ancestor=nginx'
+    echo -n "Please enter container id or name:"
+    read -ra container
+    docker exec -it ${container} bash
+  }
+
+  # Logs streams the logs from the container to the shell
+  logs () {
+      docker ps --filter 'ancestor=cnosdb/cnosdb' --filter 'ancestor=cnosdb/cnosdb-meta' --filter 'ancestor=nginx'
+      echo -n "Please enter container id or name: "
+      read -ra container
+      docker logs -f ${container}
+  }
+
+  case $1 in
+    up)
+      echo "Spinning up Docker Images..."
+      echo "If this is your first time starting sandbox this might take a minute..."
+      docker-compose up -d --build meta1 meta2 meta3
+      
+      docker exec meta1.cnosdb.com curl -s http://meta1.cnosdb.com:8901/init -d '{}'
+      docker exec meta1.cnosdb.com curl -s http://meta1.cnosdb.com:8901/add-learner -H "Content-Type: application/json" -d '[2, "meta2.cnosdb.com:8901"]'
+      docker exec meta1.cnosdb.com curl -s http://meta1.cnosdb.com:8901/add-learner -H "Content-Type: application/json" -d '[3, "meta3.cnosdb.com:8901"]'
+      docker exec meta1.cnosdb.com curl -s http://meta1.cnosdb.com:8901/change-membership -H "Content-Type: application/json" -d '[1,2,3]'
+      sleep 2
+      docker-compose up -d --build query_tskv1 query_tskv2
+      sleep 2
+      docker-compose up -d nginx
+      ;;
+    down)
+      echo "Stopping sandbox containers..."
+      docker-compose down
+      ;;
+    restart)
+      echo "Restart all sandbox processes..."
+      docker-compose restart
+      echo "Services available!"
+      ;;
+    delete-data)
+      echo "deleting all data..."
+      rm -rf ./var/lib/query_tskv1 ./var/lib/query_tskv2 ./var/lib/meta1 ./var/lib/meta2 ./var/lib/meta3
+      ;;
+    docker-clean)
+      echo "Stopping and removing running sandbox containers..."
+      docker-compose down
+      echo "Removing CnosDB images..."
+      docker rmi $(docker images -q cnosdb/cnosdb) $(docker images -q cnosdb/cnosdb-meta) > /dev/null 2>&1
+      docker rmi $(docker images -f "dangling=true" -q)
+      ;;
+    cnosdb-cli)
+      echo "Entering the CnosDB Cli..."
+      docker ps --filter 'ancestor=cnosdb/cnosdb'
+      echo -n "Please enter container id or name:"
+      read -ra container
+      docker exec -it ${container} bash
+      ;;
+    enter)
+      enter $@
+      ;;
+    logs)
+      logs $@
+      ;;
+    *)
+      cat <<-EOF
+sandbox commands:
+  up (-daily)     -> spin up the sandbox environment (latest or nightlies specified in the companion file)
+  down            -> tear down the sandbox environment (latest or nightlies specified in the companion file)
+  restart (-daily) -> restart the sandbox
+  cnosdb-cli           -> attach to the influx cli
+
+  enter           -> enter the specified container
+  logs            -> stream logs for the specified container
+
+  delete-data     -> delete all data created by CnosDB
+  docker-clean    -> stop and remove all running docker containers and images
+EOF
+      ;;
+  esac
+}
+
+pushd `dirname $0` > /dev/null
+    sandbox $@
+popd > /dev/null

@@ -1,0 +1,2 @@
+ARG CNOSDB_META_TAG
+FROM cnosdb/cnosdb-meta:$CNOSDB_META_TAG

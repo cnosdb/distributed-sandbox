@@ -1,0 +1,2 @@
+ARG CNOSDB_TAG
+FROM cnosdb/cnosdb:$CNOSDB_TAG

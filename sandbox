@@ -99,7 +99,7 @@ sandbox commands:
   up (-daily)     -> spin up the sandbox environment (latest or nightlies specified in the companion file)
   down            -> tear down the sandbox environment (latest or nightlies specified in the companion file)
   restart (-daily) -> restart the sandbox
-  cnosdb-cli           -> attach to the influx cli
+  cnosdb-cli           -> attach to the CnosDB cli
 
   enter           -> enter the specified container
   logs            -> stream logs for the specified container

@@ -64,7 +64,9 @@ sandbox () {
       ;;
     restart)
       echo "Restart all sandbox processes..."
-      docker-compose restart
+      docker-compose restart meta1 meta2 meta3
+      sleep 2
+      docker-compose restart query_tskv1 query_tskv2
       echo "Services available!"
       ;;
     delete-data)

@@ -1,62 +1,65 @@
 version: '3'
 
 services:
-    nginx:
-        image: nginx:1.18.0-alpine
-        container_name: nginx
-        volumes:
-            - ./conf/nginx/nginx.conf:/etc/nginx/nginx.conf
-        ports:
-            - "8901:8901"
-            - "8902:8902"
-            - "8903:8903"
-            - "8904:8904"
-            - "8905:8905"
+    # nginx:
+    #     image: nginx:1.18.0-alpine
+    #     container_name: nginx
+    #     volumes:
+    #         - ./conf/nginx/nginx.conf:/etc/nginx/nginx.conf
+    #     ports:
+    #         - "8901:8901"
+    #         - "8902:8902"
+    #         - "8903:8903"
+    #         - "8904:8904"
+    #         - "8905:8905"
     meta1:
-        image: cnosdb/cnosdb:community-latest
+        image: cnosdb/cnosdb-meta:community-2.3.5
         container_name: meta1.cnosdb.com
         volumes:
-            - ./conf/meta1:/etc/cnosdb
+            - ./etc/cnosdb/community/meta1:/etc/cnosdb
+            - ./var/lib/community/meta1:/var/lib/cnosdb/meta
         command:
             - /bin/bash
             - -c
             - |
                 cnosdb-meta --config /etc/cnosdb/cnosdb-meta.conf
     meta2:
-        image: cnosdb/cnosdb:community-latest
+        image: cnosdb/cnosdb-meta:community-2.3.5
         container_name: meta2.cnosdb.com
         volumes:
-            - ./conf/meta2:/etc/cnosdb
+            - ./etc/cnosdb/community/meta2:/etc/cnosdb
+            - ./var/lib/community/meta2:/var/lib/cnosdb/meta
         command:
             - /bin/bash
             - -c
             - |
                 cnosdb-meta --config /etc/cnosdb/cnosdb-meta.conf
     meta3:
-        image: cnosdb/cnosdb:community-latest
+        image: cnosdb/cnosdb-meta:community-2.3.5
         container_name: meta3.cnosdb.com
         volumes:
-            - ./conf/meta3:/etc/cnosdb
+            - ./etc/cnosdb/community/meta3:/etc/cnosdb
+            - ./var/lib/community/meta3:/var/lib/cnosdb/meta
         command:
             - /bin/bash
             - -c
             - |
                 cnosdb-meta --config /etc/cnosdb/cnosdb-meta.conf
     query_tskv1:
-        image: cnosdb/cnosdb:community-latest
+        image: cnosdb/cnosdb:community-2.3.5
         container_name: query_tskv1.cnosdb.com
         volumes:
-            - ./conf/query_tskv1:/etc/cnosdb
+            - ./etc/cnosdb/community/query_tskv1:/etc/cnosdb
         command:
             - /bin/bash
             - -c
             - |
                 cnosdb run --config /etc/cnosdb/cnosdb.conf
     query_tskv2:
-        image: cnosdb/cnosdb:community-latest
+        image: cnosdb/cnosdb:community-2.3.5
         container_name: query_tskv2.cnosdb.com
         volumes:
-            - ./conf/query_tskv2:/etc/cnosdb
+            - ./etc/cnosdb/community/query_tskv2:/etc/cnosdb
         command:
             - /bin/bash
             - -c

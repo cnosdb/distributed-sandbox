@@ -1,23 +1,23 @@
 version: '3'
 
 services:
-    # nginx:
-    #     image: nginx:1.18.0-alpine
-    #     container_name: nginx
-    #     volumes:
-    #         - ./conf/nginx/nginx.conf:/etc/nginx/nginx.conf
-    #     ports:
-    #         - "8901:8901"
-    #         - "8902:8902"
-    #         - "8903:8903"
-    #         - "8904:8904"
-    #         - "8905:8905"
+    nginx:
+        image: nginx:1.18.0-alpine
+        container_name: nginx
+        volumes:
+            - ./etc/nginx/nginx.conf:/etc/nginx/nginx.conf
+        ports:
+            - "8901:8901"
+            - "8902:8902"
+            - "8903:8903"
+            - "8904:8904"
+            - "8905:8905"
     meta1:
         image: cnosdb/cnosdb-meta:community-2.3.5
         container_name: meta1.cnosdb.com
         volumes:
-            - ./etc/cnosdb/community/meta1:/etc/cnosdb
-            - ./var/lib/community/meta1:/var/lib/cnosdb/meta
+            - ./etc/cnosdb/meta1:/etc/cnosdb
+            - ./var/lib/meta1:/var/lib/cnosdb/meta
         command:
             - /bin/bash
             - -c
@@ -27,8 +27,8 @@ services:
         image: cnosdb/cnosdb-meta:community-2.3.5
         container_name: meta2.cnosdb.com
         volumes:
-            - ./etc/cnosdb/community/meta2:/etc/cnosdb
-            - ./var/lib/community/meta2:/var/lib/cnosdb/meta
+            - ./etc/cnosdb/meta2:/etc/cnosdb
+            - ./var/lib/meta2:/var/lib/cnosdb/meta
         command:
             - /bin/bash
             - -c
@@ -38,8 +38,8 @@ services:
         image: cnosdb/cnosdb-meta:community-2.3.5
         container_name: meta3.cnosdb.com
         volumes:
-            - ./etc/cnosdb/community/meta3:/etc/cnosdb
-            - ./var/lib/community/meta3:/var/lib/cnosdb/meta
+            - ./etc/cnosdb/meta3:/etc/cnosdb
+            - ./var/lib/meta3:/var/lib/cnosdb/meta
         command:
             - /bin/bash
             - -c
@@ -49,7 +49,8 @@ services:
         image: cnosdb/cnosdb:community-2.3.5
         container_name: query_tskv1.cnosdb.com
         volumes:
-            - ./etc/cnosdb/community/query_tskv1:/etc/cnosdb
+            - ./etc/cnosdb/query_tskv1:/etc/cnosdb
+            - ./var/lib/query_tskv1:/var/lib/cnosdb
         command:
             - /bin/bash
             - -c
@@ -59,7 +60,14 @@ services:
         image: cnosdb/cnosdb:community-2.3.5
         container_name: query_tskv2.cnosdb.com
         volumes:
-            - ./etc/cnosdb/community/query_tskv2:/etc/cnosdb
+            - ./etc/cnosdb/query_tskv2:/etc/cnosdb
+            - ./var/lib/query_tskv2:/var/lib/cnosdb
+    query_tskv3:
+        image: cnosdb/cnosdb:community-2.3.5
+        container_name: query_tskv3.cnosdb.com
+        volumes:
+            - ./etc/cnosdb/query_tskv3:/etc/cnosdb
+            - ./var/lib/query_tskv3:/var/lib/cnosdb
         command:
             - /bin/bash
             - -c
